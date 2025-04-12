@@ -101,7 +101,6 @@ export async function POST(request) {
       sameSite: 'lax',
       maxAge: 86400,
       path: '/',
-      domain: process.env.NODE_ENV === 'production' ? 'your-custom.vercel.app' : undefined,
     });
 
     console.log('Login successful for user:', email);
