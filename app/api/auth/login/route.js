@@ -8,6 +8,10 @@ export async function POST(request) {
   try {
     const { email, password } = await request.json();
     console.log('Login attempt for email:', email);
+    console.log('Environment variables check:', {
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasJwtSecret: !!process.env.JWT_SECRET,
+    });
 
     if (!email || !password) {
       console.log('Missing email or password');
@@ -53,9 +57,10 @@ export async function POST(request) {
 
     response.cookies.set('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'lax',
       maxAge: 86400, // 1 day
+      path: '/',
     });
 
     console.log('Login successful for user:', email);
