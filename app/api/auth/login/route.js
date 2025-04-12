@@ -4,6 +4,17 @@ import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
+
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
@@ -11,13 +22,21 @@ export async function POST(request) {
     console.log('Environment variables check:', {
       hasMongoUri: !!process.env.MONGODB_URI,
       hasJwtSecret: !!process.env.JWT_SECRET,
+      nodeEnv: process.env.NODE_ENV,
     });
 
     if (!email || !password) {
       console.log('Missing email or password');
       return NextResponse.json(
         { error: 'Email and password are required' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        }
       );
     }
 
@@ -30,7 +49,14 @@ export async function POST(request) {
       console.log('User not found:', email);
       return NextResponse.json(
         { error: 'Invalid credentials' },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        }
       );
     }
 
@@ -39,7 +65,14 @@ export async function POST(request) {
       console.log('Invalid password for user:', email);
       return NextResponse.json(
         { error: 'Invalid credentials' },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        }
       );
     }
 
@@ -52,24 +85,43 @@ export async function POST(request) {
 
     const response = NextResponse.json(
       { message: 'Login successful', user: { name: user.name, email: user.email } },
-      { status: 200 }
+      { 
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      }
     );
 
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      maxAge: 86400, // 1 day
+      maxAge: 86400,
       path: '/',
+      domain: '.vercel.app'
     });
 
     console.log('Login successful for user:', email);
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     return NextResponse.json(
       { error: 'Login failed', details: error.message },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      }
     );
   }
 } 
