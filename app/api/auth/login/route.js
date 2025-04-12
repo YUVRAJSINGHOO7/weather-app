@@ -8,6 +8,11 @@ export async function POST(request) {
   try {
     const { email, password } = await request.json();
     console.log('Login attempt for email:', email);
+    console.log('Environment variables check:', {
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasJwtSecret: !!process.env.JWT_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+    });
 
     if (!email || !password) {
       console.log('Missing email or password');
@@ -51,17 +56,25 @@ export async function POST(request) {
       { status: 200 }
     );
 
-    response.cookies.set('token', token, {
+    // Set cookie with more permissive settings for Vercel
+    response.cookies.set({
+      name: 'token',
+      value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400, // 1 day
+      secure: true,
+      sameSite: 'none',
+      maxAge: 86400,
+      path: '/',
     });
 
     console.log('Login successful for user:', email);
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     return NextResponse.json(
       { error: 'Login failed', details: error.message },
       { status: 500 }
