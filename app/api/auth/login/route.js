@@ -97,11 +97,11 @@ export async function POST(request) {
 
     response.cookies.set('token', token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 86400,
       path: '/',
-      domain: '.vercel.app'
+      domain: process.env.NODE_ENV === 'production' ? 'your-custom.vercel.app' : undefined,
     });
 
     console.log('Login successful for user:', email);
